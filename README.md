@@ -8,8 +8,9 @@ Basically a survey of the git for data projects out there. From preliminary ress
  - [git-annex](https://git-annex.branchable.com/)
  - [Arctic](https://github.com/manahl/arctic)
  - [Datahub](https://datahub.io/)
-
-
+ - [GLFS - Git Large File Storage](https://git-lfs.github.com/)
+ - [Luigi](https://github.com/spotify/luigi) - Not strictly a data versioning tool but more an orchestration one.
+ 
 Blogposts on the subject:
  - https://shuaiw.github.io/2017/07/30/versioning-data-science.html
  - https://codeforphilly.github.io/decentralized-data/tutorials/noms/lessons/noms-cli-tour/

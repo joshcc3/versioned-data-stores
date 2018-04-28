@@ -4,14 +4,14 @@
   },
   "input": {
     "atom": {
-      "glob": "/*",
+      "glob": "/",
       "name": "documents",
       "repo": "documents",
       "branch": "master"
     }
   },
   "transform": {
-    "image": "jcoutin/word-counter:0.0.1",
+    "image": "jcoutin/word-count:0.0.6",
     "cmd": ["python", "/code/word_count.py"]
   }
 }

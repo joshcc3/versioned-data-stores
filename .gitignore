@@ -6,3 +6,5 @@ Secrets.txt
 \.*
 __*
 tmp.py
+*.iml
+.idea/

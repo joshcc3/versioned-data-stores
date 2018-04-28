@@ -1,0 +1,2 @@
+FROM python
+ADD ./word_count.py /code/word_count.py
