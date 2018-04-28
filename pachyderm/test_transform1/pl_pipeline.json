@@ -1,0 +1,19 @@
+{
+  "input": {
+    "atom": {
+      "name": "input",
+      "repo": "datasource1",
+      "branch": "master",
+      "glob": "/*"
+    }
+  },
+
+  "transform": {
+    "image": "jcoutin/pachyderm-test-transform:0.0.5",
+    "cmd": ["python", "/test_transform.py"]
+  },
+
+  "pipeline": {
+    "name": "test-transform1"
+  }
+}

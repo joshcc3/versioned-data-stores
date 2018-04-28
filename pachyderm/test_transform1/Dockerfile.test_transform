@@ -1,0 +1,2 @@
+FROM python
+ADD ./test_transform.py /
