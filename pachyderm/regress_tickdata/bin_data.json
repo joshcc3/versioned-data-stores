@@ -7,7 +7,7 @@
       "repo": "tickdata",
       "name": "tickdata",
       "branch": "master",
-      "glob": "/"
+      "glob": "/*/*/*"
     }
   },
   "transform": {
