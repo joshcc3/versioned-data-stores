@@ -8,3 +8,4 @@ __*
 tmp.py
 *.iml
 .idea/
+test_*_dir/
