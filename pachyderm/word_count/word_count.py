@@ -3,7 +3,7 @@ from itertools import takewhile, dropwhile
 
 def scanl(gen, accumF, seed):
     for a in gen:
-        yield seed
+        yield seeds
         seed = accumF(seed, a)
     yield seed
 

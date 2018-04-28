@@ -1,0 +1,17 @@
+{
+  "pipeline": {
+    "name": "rolling_word_count"
+  },
+  "input": {
+    "atom": {
+      "glob": "/*",
+      "name": "documents",
+      "repo": "documents",
+      "branch": "master"
+    }
+  },
+  "transform": {
+    "image": "jcoutin/word-counter:0.0.1",
+    "cmd": ["python", "/code/word_count.py"]
+  }
+}
