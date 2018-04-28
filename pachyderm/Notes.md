@@ -38,7 +38,7 @@ Problems
 --------
 So far it looks quite good, the dashboard is very useful but its enterprise only. 
 Also sometimes it just stops working and I have to do another port forward, not sure why.
-
+The dashboard doesn't work properly all the time
 
 Use for us
 ----------

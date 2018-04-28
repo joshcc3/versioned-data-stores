@@ -57,16 +57,16 @@ def file_tree(bin_root):
     assert os.path.isdir(bin_root)
     assert bin_root[-1] != '/'
 
-    def stopping_condition(dpath):
-        return not re.match(d_regex, dpath)
+    def skip_condition(dpath, fnames):
+        return not fnames and not re.match(d_regex, dpath)
 
     for (dirpath, dirnames, fnames) in os.walk(bin_root, topdown=False):
         print("Processing {}".format(dirpath))
-        if stopping_condition(dirpath):
-            print("Stopping now, all leaf level directiories should have been processed")
-            break
+        if skip_condition(dirpath, fnames):
+            print("Skipping path {}, this is not a leaf directory".format(dirpath))
+            continue
 
-        assert(not stopping_condition(dirpath))
+        assert(not skip_condition(dirpath, fnames))
 
         (year, month, day, hour) = parse_dpath(dirpath)
         for fname in fnames:

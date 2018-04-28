@@ -1,0 +1,4 @@
+FROM python
+ADD ./bin_data.py /code/
+ADD ./choose_bin.py /code/
+ADD ./evaluate_bin.py /code/

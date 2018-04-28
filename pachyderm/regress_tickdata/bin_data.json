@@ -1,0 +1,18 @@
+{
+
+  "pipeline": { "name": "bin_data" },
+
+  "input": {
+    "atom": {
+      "repo": "tickdata",
+      "name": "tickdata",
+      "branch": "master",
+      "glob": "/"
+    }
+  },
+  "transform": {
+    "image": "jcoutin/regress-tickdata:0.0.2",
+    "cmd": ["python", "/code/bin_data.py", "/pfs/tickdata"]
+  }
+
+}
