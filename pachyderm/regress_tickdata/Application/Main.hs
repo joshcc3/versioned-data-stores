@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE DeriveFunctor, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveGeneric #-}
 
@@ -67,9 +68,19 @@ toDataSample = expandOutUnderliers
       return (Node [mkPath n ()] cs)
 
 
-
 binned :: FilePth -> IO Binned
-binned = undefined
+binned fp = do
+  root <- eitherT abort pure . dat . unwrap $ fp
+  anchored <- buildL root
+  let toBinned (s, e, t) = toDataSample t >>= pure . (mkBin (s, e),)
+      triples = do
+           Dir s cs  <- [dirTree anchored]
+           Dir e cs' <- cs
+           t         <- cs'
+           return (s, e, t)
+  paired <- mapM toBinned triples
+  return $ M.fromList paired
+
 
 evaluate :: Expected -> Binned -> Evaluated
 evaluate expected binned
