@@ -3,6 +3,7 @@
 {-# LANGUAGE DeriveFunctor #-}
 module Application.Tree where
 
+import Control.Comonad
 import Control.Applicative
 import Data.Monoid
 
@@ -16,3 +17,9 @@ instance Monoid m => Applicative (Tree m) where
     Node m ts <*> Leaf m' a = Node (m <> m') (map (<*> Leaf m' a) ts)
     Node m ts <*> Node m' ts' = Node (m <> m') (zipWith (<*>) ts ts')
 
+instance Monoid m => Monad (Tree m) where
+    return x = Leaf mempty x
+               
+    Leaf m x >>= f = f x
+    Node m ls >>= f = Node m (map (>>= f) ls)
+    

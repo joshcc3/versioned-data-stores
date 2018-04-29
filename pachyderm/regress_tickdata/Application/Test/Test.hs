@@ -9,6 +9,8 @@ import Application.Bin
 
 import qualified Data.Map as M    
 
+import System.Directory.Tree
+
 
 nodePathPath1 = Node [mkPath "12" ()] [nodePath1]
 nodePathPath2 = Node [mkPath "10" ()] [nodePath2, nodePath3]
@@ -28,3 +30,8 @@ binned2 = M.fromList [(mkBin ("01", "02"), nodePathPath2)]
 test1 = M.toList $ evaluate nodePath1 binned1
 test2 = M.toList $ evaluate nodePathPath2 binned2
 test3 = M.toList $ evaluate nodePathPath1 binned2
+
+
+x = do
+  a <- buildL "./test_input_dir"
+  print $ foldMap (:[]) (dirTree a)

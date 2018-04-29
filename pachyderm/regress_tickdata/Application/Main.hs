@@ -13,7 +13,10 @@ import Application.Bin
 import Application.Config
 import Application.FilePath    
 
+import Control.Monad.Trans
+import Control.Monad
 import Data.Monoid
+import qualified Control.Exception as E
 import qualified Data.Semigroup as S
 import Control.Monad.Trans.Either
 import qualified Data.Vector as V
@@ -38,7 +41,32 @@ type OutputRecord = Rec
 
 
 observed :: FilePth -> IO Expected
-observed = undefined
+observed filepth = do
+  root <- eitherT abort pure . dat . unwrap $ filepth
+  anchored <- buildL root
+  toDataSample (dirTree anchored)
+
+toDataSample :: DirTree String -> IO (Tree [PathComponent] ClosePrice)
+toDataSample = expandOutUnderliers
+  where
+    expandOutUnderliers :: DirTree String -> IO (Tree [PathComponent] ClosePrice)
+    expandOutUnderliers (Failed name err) = E.throw err
+    expandOutUnderliers (Dir n c) = do
+      sdirs <- mapM expandOutUnderliers c
+      return (Node [mkPath n ()] sdirs)
+    expandOutUnderliers (File n f) = do
+      fcontents <- LBS.readFile f
+      let
+          records :: [CSVRecordIn]
+          records = map mkCSVRecord . V.toList . either abort id . decode NoHeader $ fcontents
+          cs = map formatAsFile records
+          formatAsFile :: CSVRecordIn -> Tree [PathComponent] ClosePrice
+          formatAsFile record =
+            let InRec u p = either abort id (dat record)
+            in Leaf [mkPath u ()] (mkPrice (PMetadata (Just [f]) (Just 0, Nothing) (Just ["Price for " ++ u])) p)
+      return (Node [mkPath n ()] cs)
+
+
 
 binned :: FilePth -> IO Binned
 binned = undefined

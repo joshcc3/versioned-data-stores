@@ -11,7 +11,14 @@ data Rec = Rec { underlier :: String, windowStart :: String, windowEnd :: String
 instance FromRecord Rec
 instance ToRecord Rec
 
-type CSVRecord = SimpleData () Rec
+type CSVRecord_ a = SimpleData () a
+type CSVRecord = CSVRecord_ Rec    
+type CSVRecordIn = CSVRecord_ InRec
 
-mkCSVRecord :: Rec -> CSVRecord
+mkCSVRecord :: a -> CSVRecord_ a
 mkCSVRecord a = mkData noCheck () a
+
+data InRec = InRec { inunderlier :: String, price :: Double }  deriving (Generic, Show)
+instance FromRecord InRec
+instance ToRecord InRec
+           
