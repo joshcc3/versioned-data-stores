@@ -1,9 +1,9 @@
 module Application.Score where
 import Application.Data
 
-type Score = Data () Double
+type Score = SimpleData () Double
 
 mkBin :: Double -> Score
-mkBin a = Data checks () a
+mkBin a = mkData checks () a
   where
     checks = Right
