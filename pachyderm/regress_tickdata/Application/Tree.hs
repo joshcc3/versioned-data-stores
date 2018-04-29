@@ -1,9 +1,11 @@
-module Tree where
+{-# LANGUAGE DeriveFunctor #-}
+module Application.Tree where
 
+import Control.Applicative
+import Data.Monoid
 
-data Tree_ m a = Leaf m a | Node m [Tree_ m a] deriving (Functor)
-type TreeMetadata = [String]
-type Tree = Tree Metadata
+data Tree m a = Leaf m a | Node m [Tree m a] deriving (Functor)
+
 
 instance Monoid m => Applicative (Tree m) where
     pure x = Leaf mempty x

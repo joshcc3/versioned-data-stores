@@ -2,17 +2,19 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 
-
-import Application.CFlow
+import Application.Data
+import Application.Tree
 import Application.PathComponent
 import Application.Price
 import Application.Score
 import Application.CSVRecord
+import Application.Bin
 
 import System.Directory.Tree
 import Data.Csv
+import qualified Data.Map as M
 
-type ClosePrice = Price
+type ClosePrice = Price Double
 
 
 type DataSample = Tree [PathComponent] ClosePrice
@@ -20,8 +22,8 @@ type DataSample = Tree [PathComponent] ClosePrice
 
 type Observed = DataSample
 type Expected = DataSample
-type Binned = Map Bin Observed
-type Evaluated = Map Bin Score
+type Binned = M.Map Bin Observed
+type Evaluated = M.Map Bin Score
 type ScoreAsCSV = CSVRecord
 type FPath = String
 type OutputRecord = Rec
@@ -36,7 +38,7 @@ binned = undefined
 evaluate :: Expected -> Binned -> Evaluated
 evaluate = undefined
 
-csvRecord :: Evaluated -> Map FileName [CSVRecord]
+csvRecord :: Evaluated -> M.Map FileName [CSVRecord]
 csvRecord = undefined
 
 
@@ -46,8 +48,9 @@ writeRecord = undefined
 
 main :: IO ()
 main = do
-  expected <- observed
-  bins <- binned
-  evaluated <- evaluate expected bins
-  recs <- csvRecord evaluated
-  mapM_ (M.toList recs) (\(fname, csvrecs) -> writeRecord fname (dat csvrecs))
+  let rootPath = "/pfs/tickdata"
+  expected <- observed rootPath
+  bins <- binned rootPath
+  let evaluated = evaluate expected bins
+      recs = csvRecord evaluated
+  mapM_ (\(fname, csvrecs) -> writeRecord fname (map dat csvrecs)) (M.toList recs)

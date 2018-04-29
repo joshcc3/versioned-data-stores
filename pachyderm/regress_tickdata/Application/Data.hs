@@ -1,8 +1,8 @@
-module Data where
+module Application.Data where
 
-type Check a = a -> Either (Err (m, a)) a
+type Err a = (String, a)
+type Check a = a -> Either (Err a) a
 
 data Data m a = Data { checks :: Check (m, a), metadata :: m, dat :: a }
 
-
-
+noCheck = Right

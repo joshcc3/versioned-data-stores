@@ -1,9 +1,9 @@
-module Score where
-
+module Application.Score where
+import Application.Data
 
 type Score = Data () Double
 
 mkBin :: Double -> Score
-mkbin a = Data checks () a
+mkBin a = Data checks () a
   where
     checks = Right

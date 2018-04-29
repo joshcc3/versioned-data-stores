@@ -1,15 +1,18 @@
-module Price where
+module Application.Price where
 
 import Application.Data
 
 type Price = Data PriceMetadata
 
-mkPrice :: PriceMetadata -> Double -> Price
-mkPrice price m = Data checks metadata price
+mkPrice :: PriceMetadata -> Double -> Price Double
+mkPrice m price = Data checks m price
   where
-    checks (m, a) = check (a >=) (fst (bound m)) && check (a <=) (snd (bound m))
+    checks x@(m, a)
+        | check (a >=) (fst (bound m))
+          && check (a <=) (snd (bound m)) = Right x
+        | otherwise = Left ("Price doesn't fall within expected bounds", x)                                    
     check f = maybe True f
 
 data PriceMetadata = PMetadata { source :: Maybe String, bound :: Bounds Double, description :: Maybe String }
 
-type Bounds a = (Maybe a, Maybe b)
+type Bounds a = (Maybe a, Maybe a)

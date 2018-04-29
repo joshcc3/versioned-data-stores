@@ -1,12 +1,12 @@
-module PathComponent where
+module Application.PathComponent where
 
-import Data.Lazy.ByteString as lbs
+import Data.ByteString as BS
 import Application.Data
 
-type PathComponent = Data PathMetadata ByteString { checks :: Check (m, a), metadata :: m, price :: a }
+type PathComponent = Data PathMetadata ByteString
 type PathMetadata = ()
 
-mkPath :: String -> PathMetadata -> PathComponent
-mkPath pth = Data checks metadata pth
+mkPath :: BS.ByteString -> PathMetadata -> PathComponent
+mkPath pth m = Data checks m pth
   where
     checks = Right
