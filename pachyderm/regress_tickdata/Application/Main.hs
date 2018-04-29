@@ -43,17 +43,15 @@ binned = undefined
 evaluate :: Expected -> Binned -> Evaluated
 evaluate = undefined
 
-(//) :: FilePth -> FilePth -> FilePth
-(//) fp1 fp2 = (\a b -> a ++ "/" ++ b) <$> fp1 <*> fp2        
-
 
 csvRecord :: FilePth -> Evaluated -> M.Map FilePth [CSVRecord]
-csvRecord outputFp evaled = M.mapKeys toFname undefined -- (M.mapWithKey toCsvRecord evaled)
+csvRecord outputFp evaled = M.mapKeys toFname (M.mapWithKey toCsvRecord evaled)
     where
-      toFname bin = outputFp // fmap binToFname bin
+      toFname bin = fmap (flip pathAppend . either abort binToFname $ dat bin) outputFp
           where
+            pathAppend a b = a ++ "/" ++ b
             binToFname (l, u) = l ++ "-" ++ u ++ ".csv"
-      toCsvRecord = undefined
+      toCsvRecord bin score = undefined
 
 -- What happens to stuff like open file handles and all the other bits of global state left lying around?
 writeRecord :: FileName -> [Rec] -> IO ()
@@ -77,4 +75,4 @@ main = do
            fname <- eitherT abort pure (dat . unwrap $ fpth)
            handleRecord fname csvrecs)
         (M.toList recs)
-        
+
