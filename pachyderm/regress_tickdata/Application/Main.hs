@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveFunctor, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveGeneric #-}
 
+module Application.Main where
 
 import Application.Data
 import Application.Tree
@@ -52,12 +53,13 @@ evaluate expected binned
           foldable = squaredDiff <$> e <*> o
           deconstruct :: Tree [PathComponent] ClosePrice -> Either Err (M.Map String Score.Score)
           deconstruct (Leaf m a)
-              | all id (zipWith (==) m (tail m)) = do
-                                                     underlier <- dat (last m)
-                                                     price <- dat a
-                                                     pure $ M.fromList [(underlier, Score.mkScore price underlier)]
+              | checkPathComponents m = do
+                            underlier <- dat (last m)
+                            price <- dat a
+                            pure $ M.fromList [(underlier, Score.mkScore price underlier)]
               | otherwise = error $ "Path components aren't the same: " ++ show m
-          deconstruct (Node _ ts) = fmap mergeScores (traverse deconstruct ts)
+          deconstruct (Node x ts) = fmap mergeScores (traverse deconstruct ts)
+          checkPathComponents m = all id (zipWith (==) m (tail m))
           mergeScores = foldl (M.unionWith (S.<>)) M.empty
 
 
