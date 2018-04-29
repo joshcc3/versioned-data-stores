@@ -12,6 +12,8 @@ import Application.Bin
 import Application.Config
 import Application.FilePath    
 
+import Data.Monoid
+import qualified Data.Semigroup as S
 import Control.Monad.Trans.Either
 import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy as LBS
@@ -41,8 +43,25 @@ binned :: FilePth -> IO Binned
 binned = undefined
 
 evaluate :: Expected -> Binned -> Evaluated
-evaluate = undefined
+evaluate expected binned
+   = M.mapWithKey (toScore expected) binned
+     where
+       toScore :: Expected -> Bin -> Observed -> [Score.Score]
+       toScore e b o = map snd . M.toList . either abort id $ deconstruct foldable
+         where 
+          foldable = squaredDiff <$> e <*> o
+          deconstruct :: Tree [PathComponent] ClosePrice -> Either Err (M.Map String Score.Score)
+          deconstruct (Leaf m a)
+              | all id (zipWith (==) m (tail m)) = do
+                                                     underlier <- dat (last m)
+                                                     price <- dat a
+                                                     pure $ M.fromList [(underlier, Score.mkScore price underlier)]
+              | otherwise = error $ "Path components aren't the same: " ++ show m
+          deconstruct (Node _ ts) = fmap mergeScores (traverse deconstruct ts)
+          mergeScores = foldl (M.unionWith (S.<>)) M.empty
 
+
+squaredDiff x y = (**) <$> (x - y) <*> 2       
 
 csvRecord :: FilePth -> Evaluated -> M.Map FilePth [CSVRecord]
 csvRecord outputFp evaled = M.mapKeys toFname (M.mapWithKey toCsvRecord evaled)

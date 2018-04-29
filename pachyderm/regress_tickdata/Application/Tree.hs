@@ -1,10 +1,12 @@
+{-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveFunctor #-}
 module Application.Tree where
 
 import Control.Applicative
 import Data.Monoid
 
-data Tree m a = Leaf m a | Node m [Tree m a] deriving (Functor)
+data Tree m a = Leaf m a | Node m [Tree m a] deriving (Functor, Foldable, Traversable)
 
 
 instance Monoid m => Applicative (Tree m) where
