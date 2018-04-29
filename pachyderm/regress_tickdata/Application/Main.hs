@@ -34,17 +34,26 @@ type FPath = String
 type OutputRecord = Rec
 
 
-observed :: String -> IO Expected
+observed :: FilePth -> IO Expected
 observed = undefined
 
-binned :: String -> IO Binned
+binned :: FilePth -> IO Binned
 binned = undefined
 
 evaluate :: Expected -> Binned -> Evaluated
 evaluate = undefined
 
-csvRecord :: String -> Evaluated -> M.Map FileName [CSVRecord]
-csvRecord cfg = undefined
+(//) :: FilePth -> FilePth -> FilePth
+(//) fp1 fp2 = (\a b -> a ++ "/" ++ b) <$> fp1 <*> fp2        
+
+
+csvRecord :: FilePth -> Evaluated -> M.Map FilePth [CSVRecord]
+csvRecord outputFp evaled = M.mapKeys toFname undefined -- (M.mapWithKey toCsvRecord evaled)
+    where
+      toFname bin = outputFp // fmap binToFname bin
+          where
+            binToFname (l, u) = l ++ "-" ++ u ++ ".csv"
+      toCsvRecord = undefined
 
 -- What happens to stuff like open file handles and all the other bits of global state left lying around?
 writeRecord :: FileName -> [Rec] -> IO ()
@@ -58,13 +67,14 @@ abort = error . show
 main :: IO ()
 main = do
   let config = mkCfg "/pfs/tickdata" "/pfs/out"
-      Cfg _inputRoot _outputRoot = either (\_ -> error "Config check failed") id (dat config)
-  inputRoot <- eitherT abort pure (dat _inputRoot)
-  outputRoot <- eitherT abort pure (dat _outputRoot)
+      Cfg inputRoot outputRoot = either (\_ -> error "Config check failed") id (dat config)
   expected <- observed inputRoot
   bins <- binned inputRoot
   let evaluated = evaluate expected bins
       recs = csvRecord outputRoot evaluated
-      handleRecord (fname, csvrecs) = writeRecord fname . either abort id . traverse dat $ csvrecs
-  mapM_ handleRecord (M.toList recs)
+      handleRecord fname csvrecs = writeRecord fname . either abort id . traverse dat $ csvrecs
+  mapM_ (\(fpth, csvrecs) -> do
+           fname <- eitherT abort pure (dat . unwrap $ fpth)
+           handleRecord fname csvrecs)
+        (M.toList recs)
         
