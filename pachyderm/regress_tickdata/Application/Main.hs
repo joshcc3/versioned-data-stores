@@ -14,6 +14,7 @@ import Application.Bin
 import Application.Config
 import Application.FilePath    
 
+import System.Environment
 import Control.Monad.Trans
 import Control.Monad
 import Data.Monoid
@@ -132,9 +133,10 @@ abort = error . show
         
 main :: IO ()
 main = do
-  let config = mkCfg "/pfs/tickdata" "/pfs/out"
-      Cfg inputRoot outputRoot = either (\_ -> error "Config check failed") id (dat config)
-  expected <- observed inputRoot
+  as <- getArgs >>= either abort pure . dat . mkArgs
+  let config = mkCfg "/pfs/tickdata" "/pfs/expected" "/pfs/out"
+      Cfg inputRoot expectedRoot outputRoot = either (\_ -> error "Config check failed") id (dat config)
+  expected <- observed expectedRoot
   bins <- binned inputRoot
   let evaluated = evaluate expected bins
       recs = csvRecord outputRoot evaluated
