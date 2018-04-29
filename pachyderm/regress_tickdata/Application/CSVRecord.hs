@@ -13,5 +13,5 @@ instance ToRecord Rec
 
 type CSVRecord = SimpleData () Rec
 
-mkCSVRrcord :: Rec -> CSVRecord
-mkCSVRrcord a = mkData noCheck () a
+mkCSVRecord :: Rec -> CSVRecord
+mkCSVRecord a = mkData noCheck () a

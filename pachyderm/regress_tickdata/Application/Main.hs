@@ -6,7 +6,7 @@ import Application.Data
 import Application.Tree
 import Application.PathComponent
 import Application.Price
-import Application.Score
+import qualified Application.Score as Score
 import Application.CSVRecord
 import Application.Bin
 import Application.Config
@@ -28,7 +28,7 @@ type DataSample = Tree [PathComponent] ClosePrice
 type Observed = DataSample
 type Expected = DataSample
 type Binned = M.Map Bin Observed
-type Evaluated = M.Map Bin Score
+type Evaluated = M.Map Bin [Score.Score]
 type ScoreAsCSV = CSVRecord
 type FPath = String
 type OutputRecord = Rec
@@ -51,7 +51,15 @@ csvRecord outputFp evaled = M.mapKeys toFname (M.mapWithKey toCsvRecord evaled)
           where
             pathAppend a b = a ++ "/" ++ b
             binToFname (l, u) = l ++ "-" ++ u ++ ".csv"
-      toCsvRecord bin score = undefined
+      toCsvRecord :: Bin -> [Score.Score] -> [CSVRecord]
+      toCsvRecord bin scores = either abort id $ do
+        (windowStart, windowEnd) <- dat bin
+        traverse (\score -> do
+                    underlier <- dat . Score.underlier . metadata $ score
+                    scoreVal <- dat score
+                    pure . mkCSVRecord $
+                          Rec underlier windowStart windowEnd scoreVal)
+                 scores
 
 -- What happens to stuff like open file handles and all the other bits of global state left lying around?
 writeRecord :: FileName -> [Rec] -> IO ()

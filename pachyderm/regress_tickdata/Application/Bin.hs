@@ -7,5 +7,5 @@ mkBin :: (String, String) -> Bin
 mkBin a = mkData checks () a
   where
     checks x@(m, a)
-           | fst a > snd a = Left ("Empty Bounds", a)
+           | fst a > snd a = Left ("Empty Bounds", show a)
            | otherwise = Right x

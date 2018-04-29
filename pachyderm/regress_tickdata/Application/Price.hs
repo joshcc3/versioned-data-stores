@@ -10,7 +10,7 @@ mkPrice m price = mkData checks m price
     checks x@(m, a)
         | check (a >=) (fst (bound m))
           && check (a <=) (snd (bound m)) = Right x
-        | otherwise = Left ("Price doesn't fall within expected bounds", a) 
+        | otherwise = Left ("Price doesn't fall within expected bounds", show a) 
     check f = maybe True f
 
 data PriceMetadata = PMetadata { source :: Maybe String, bound :: Bounds Double, description :: Maybe String }

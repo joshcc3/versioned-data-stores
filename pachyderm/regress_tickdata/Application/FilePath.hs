@@ -11,7 +11,7 @@ import Control.Monad.Trans
 (//) fp1 fp2 = (\a b -> a ++ "/" ++ b) <$> fp1 <*> fp2        
 
 
-newtype FilePth_ a = F { unwrap :: Data (EitherT (Err String) IO) () a }
+newtype FilePth_ a = F { unwrap :: Data (EitherT Err IO) () a }
     deriving (Functor, Applicative)
 
 type FilePth = FilePth_ String
