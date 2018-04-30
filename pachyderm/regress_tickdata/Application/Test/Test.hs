@@ -34,4 +34,6 @@ test3 = M.toList $ evaluate nodePathPath1 binned2
 
 x = do
   a <- buildL "./test_input_dir"
-  print $ foldMap (:[]) (dirTree a)
+       foldMap (:[]) (dirTree a)
+
+               

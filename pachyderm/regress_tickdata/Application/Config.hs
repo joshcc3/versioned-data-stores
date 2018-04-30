@@ -9,13 +9,17 @@ import Control.Monad.Trans.Either
 import Control.Monad.Trans
 
 
-data Cfg = Cfg { inputRoot :: FilePth, expectedInputRoot :: FilePth, outputRoot :: FilePth }
+data Cfg = Cfg { inputRoot :: FilePth, expectedInputRoot :: FilePth, outputRoot :: FilePth } deriving (Eq, Ord, Show)
 
 type Config = SimpleData () Cfg
 
     
 mkCfg :: String -> String -> String -> Config
-mkCfg inp exp out = mkData noCheck () (Cfg (mkFPath inp) (mkFPath exp) (mkFPath out))
+mkCfg inp exp out = mkData check () (Cfg (mkNonEmptyFPath inp) (mkNonEmptyFPath exp) (mkEmptyFPath out))
+    where
+      check x@(_, Cfg a b c)
+            | a /= b && a /= c && b /= c = Right x
+            | otherwise = Left ("A pair(s) for the provided roots were duplicated", show x)
 
 type Args = SimpleData () [String]
 data As = Args { arg1 :: String, arg2 :: String, arg3 :: String }

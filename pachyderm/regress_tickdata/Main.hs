@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveFunctor, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Application.Main where
+module Main where
 
 import Application.Data
 import Application.Tree
@@ -13,6 +13,7 @@ import Application.CSVRecord
 import Application.Bin
 import Application.Config
 import Application.FilePath    
+import Application.List
 
 import System.Environment
 import Control.Monad.Trans
@@ -23,6 +24,7 @@ import qualified Data.Semigroup as S
 import Control.Monad.Trans.Either
 import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.ByteString as BS    
 import System.Directory.Tree
 import Data.Csv
 import qualified Data.Map as M
@@ -41,15 +43,19 @@ type ScoreAsCSV = CSVRecord
 type FPath = String
 type OutputRecord = Rec
 
+                    
+chRoot :: DirTree a -> DirTree a
+chRoot (Dir n c) = Dir "/" c
+chRoot x = x
 
 observed :: FilePth -> IO Expected
 observed filepth = do
   root <- eitherT abort pure . dat . unwrap $ filepth
-  anchored <- buildL root
+  anchored <- build root
   toDataSample (dirTree anchored)
 
 toDataSample :: DirTree String -> IO (Tree [PathComponent] ClosePrice)
-toDataSample = expandOutUnderliers
+toDataSample = expandOutUnderliers . chRoot
   where
     expandOutUnderliers :: DirTree String -> IO (Tree [PathComponent] ClosePrice)
     expandOutUnderliers (Failed name err) = E.throw err
@@ -57,10 +63,10 @@ toDataSample = expandOutUnderliers
       sdirs <- mapM expandOutUnderliers c
       return (Node [mkPath n ()] sdirs)
     expandOutUnderliers (File n f) = do
-      fcontents <- LBS.readFile f
+      fcontents <- BS.readFile f
       let
           records :: [CSVRecordIn]
-          records = map mkCSVRecord . V.toList . either abort id . decode NoHeader $ fcontents
+          records = map mkCSVRecord . V.toList . either abort id . decode NoHeader $ LBS.fromStrict fcontents
           cs = map formatAsFile records
           formatAsFile :: CSVRecordIn -> Tree [PathComponent] ClosePrice
           formatAsFile record =
@@ -72,12 +78,12 @@ toDataSample = expandOutUnderliers
 binned :: FilePth -> IO Binned
 binned fp = do
   root <- eitherT abort pure . dat . unwrap $ fp
-  anchored <- buildL root
+  anchored <- build root
   let toBinned (s, e, t) = toDataSample t >>= pure . (mkBin (s, e),)
       triples = do
-           Dir s cs  <- [dirTree anchored]
-           Dir e cs' <- cs
-           t         <- cs'
+           Dir _ cs   <- [dirTree anchored] -- Ignore the root directory
+           Dir s cs'  <- cs
+           t@(Dir e _) <- cs'
            return (s, e, t)
   paired <- mapM toBinned triples
   return $ M.fromList paired
@@ -125,7 +131,8 @@ csvRecord outputFp evaled = M.mapKeys toFname (M.mapWithKey toCsvRecord evaled)
 -- What happens to stuff like open file handles and all the other bits of global state left lying around?
 writeRecord :: FileName -> [Rec] -> IO ()
 writeRecord fname recs = do
-  result <- LBS.writeFile fname (encode recs)
+  let rs = either abort id . dat $ mkSizeBoundedList (>= 3) recs
+  result <- LBS.writeFile fname (encode rs)
   putStrLn $ "Wrote csv records to " ++ fname ++ ": " ++ show result
 
 abort :: (Show a) => a -> b
@@ -134,7 +141,7 @@ abort = error . show
 main :: IO ()
 main = do
   as <- getArgs >>= either abort pure . dat . mkArgs
-  let config = mkCfg "/pfs/tickdata" "/pfs/expected" "/pfs/out"
+  let config = mkCfg (as !! 0) (as !! 1) (as !! 2)
       Cfg inputRoot expectedRoot outputRoot = either (\_ -> error "Config check failed") id (dat config)
   expected <- observed expectedRoot
   bins <- binned inputRoot

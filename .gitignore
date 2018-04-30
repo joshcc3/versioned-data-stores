@@ -10,3 +10,6 @@ tmp.py
 .idea/
 test_*_dir/
 .#*
+*.o
+*.hi
+Main
