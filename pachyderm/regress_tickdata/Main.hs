@@ -66,7 +66,7 @@ toDataSample = expandOutUnderliers . chRoot
       fcontents <- BS.readFile f
       let
           records :: [CSVRecordIn]
-          records = map mkCSVRecord . V.toList . either abort id . decode NoHeader $ LBS.fromStrict fcontents
+          records = map mkCSVRecord . V.toList . either abort id . decode HasHeader $ LBS.fromStrict fcontents
           cs = map formatAsFile records
           formatAsFile :: CSVRecordIn -> Tree [PathComponent] ClosePrice
           formatAsFile record =

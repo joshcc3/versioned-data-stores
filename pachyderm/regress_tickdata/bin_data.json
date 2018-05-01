@@ -1,6 +1,6 @@
 {
 
-  "pipeline": { "name": "bin_data" },
+  "pipeline": { "name": "binned" },
 
   "input": {
     "atom": {
