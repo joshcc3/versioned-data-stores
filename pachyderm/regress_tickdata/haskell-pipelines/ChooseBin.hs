@@ -34,9 +34,6 @@ import qualified Data.Map as M
 
 
 type Key = SimpleData () String    
-type CSVRecordResult = ()
-instance ToRecord CSVRecordResult
-instance FromRecord CSVRecordResult    
     
 type BinnedScores = M.Map Key Score    
     
@@ -67,10 +64,10 @@ main = do
   as <- getArgs >>= either abort pure . dat . mkArgs
   let config = mkCfg (as !! 0) (as !! 1)
       Cfg inputRoot outputRoot = either (\_ -> error "Config check failed") id (dat config)
-  let ofile = ""
-  scoreList <- parse undefined
-  let resCSV :: [CSVRecordResult]
-      resCSV = either abort id . dat . result . scored . binned $ scoreList
+  scoreList <- parse inputRoot
+  ofile <- eitherT abort pure . dat . unwrap $ outputRoot
+  let resCSV :: [FinalRec]
+      resCSV = map (either abort id . dat) . either abort id . dat . result . scored . binned $ scoreList
   LBS.writeFile ofile (encode resCSV)
   
 
@@ -89,18 +86,30 @@ parse fpth = do
   return . mkNonEmptyList . map toScore . V.toList $ recs
 
 
-
 scoreKey :: ScoreKey
-scoreKey = undefined
+scoreKey = Score.underlier . metadata
 
 scored :: Scored
-scored = undefined
+scored = foldl g M.empty
+    where
+      g acc l = foldl (M.unionWith unioner) acc l
+      unioner l m = do
+        s1 <- l
+        s2 <- m
+        if s1 < s2
+        then l
+        else m
+
          
 result :: Result
-result = undefined
-
-
-
+result mp = mkNonEmptyList . map f  $ M.toList mp
+    where
+      f (_, s) = either abort id . dat $ do
+                   let meta = metadata s
+                   u <- Score.underlier $ meta
+                   let Just b = scoreBin meta
+                   (b1, b2) <- b
+                   return $ mkCSVRecord (FinalRec u b1 b2)
 
 
 data Cfg = Cfg { inputRoot :: FilePth, outputRoot :: FilePth } deriving (Eq, Ord, Show)
@@ -123,4 +132,3 @@ mkArgs = mkData check ()
     where
       check (m, x@[_, _]) = Right (m, x)
       check (_, as) = Left ("You must supply 3 arguments: the binned tickdata root, the expected outcome data root, evaluation output root", show as)
-         

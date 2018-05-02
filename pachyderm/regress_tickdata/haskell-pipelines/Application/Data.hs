@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveFunctor #-}
 module Application.Data where
 import Control.Applicative
@@ -7,7 +9,7 @@ import Data.Monoid
 type Err = (String, String)
 type Check f a = a -> f a
 
-data Data f m a = Data { metadata :: m, dat :: f a, uncheckedDat :: a } deriving (Functor, Eq, Ord, Show, Read)
+data Data f m a = Data { metadata :: m, dat :: f a, uncheckedDat :: a } deriving (Functor, Eq, Ord, Show, Read, Foldable, Traversable)
 
 instance (Monoid m, Applicative f) => Applicative (Data f m) where
     pure x = Data mempty (pure x) x

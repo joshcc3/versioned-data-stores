@@ -14,8 +14,8 @@ instance ToRecord Rec
 type CSVRecord_ a = SimpleData () a
 type CSVRecord = CSVRecord_ Rec    
 type CSVRecordIn = CSVRecord_ InRec
-type CSVRecirdResult = CSVRecord_ FinalRec
-
+type CSVRecordResult = CSVRecord_ FinalRec
+  
 mkCSVRecord :: a -> CSVRecord_ a
 mkCSVRecord a = mkData noCheck () a
 
@@ -23,7 +23,7 @@ data InRec = InRec { inunderlier :: String, price :: Double }  deriving (Generic
 instance FromRecord InRec
 instance ToRecord InRec
            
-data FinalRec = FinalRec { resolution :: Double }  deriving (Generic, Show)
+data FinalRec = FinalRec { undie :: String, winS :: String, winE :: String }  deriving (Generic, Show)
 instance FromRecord FinalRec
 instance ToRecord FinalRec
            

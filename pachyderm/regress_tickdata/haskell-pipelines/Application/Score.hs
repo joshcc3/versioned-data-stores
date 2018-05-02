@@ -11,10 +11,17 @@ import Data.Semigroup
 type Score = SimpleData ScoreMetadata Double
 data ScoreMetadata = SMeta { underlier :: Underlier, scoreBin :: Maybe Bin } deriving (Eq, Ord, Show, Read)
 
+instance Monoid ScoreMetadata where
+    mempty = SMeta (mkUnderlier "") Nothing
+    mappend _ a = a
+
+instance Semigroup ScoreMetadata where
+    (<>) = mappend
+                   
 instance Semigroup Score where
     Data m d u <> Data m' d' u'
-        | m == m' = Data m (liftA2 (+) d d') (u + u')
-        | otherwise = Data m (Left ("Underliers disagree", concat [show d, ", ", show d']))  (u + u')
+        | m == m' = Data (m <> m') (liftA2 (+) d d') (u + u')
+        | otherwise = Data (m <> m') (Left ("Underliers disagree", concat [show d, ", ", show d']))  (u + u')
 
 mkScoreM :: ScoreMetadata -> Double -> Score
 mkScoreM = mkData noCheck
