@@ -81,12 +81,12 @@ parse fpth = do
       expectedFname_ x = left ("Binned fname did not match expected", x)
   fname <- eitherT abort pure . dat $ unwrap fpth >>= expectedFname
   fcontent <- BS.readFile fname
-  let recs :: V.Vector ()
+  let recs :: V.Vector Rec
       recs = either abort id . decode HasHeader $ LBS.fromStrict fcontent
-      binInf = toBinInfo fname
-      toBinInfo = undefined
-      toScore = undefined
-  return . mkNonEmptyList . map (toScore binInf) . V.toList $ recs
+      toScore :: Rec -> Score
+      toScore = toScore_ . either abort id . dat . mkCSVRecord
+      toScore_ (Rec u s e v) = mkScoreM (SMeta (mkUnderlier u) (Just (mkBin (s, e)))) v
+  return . mkNonEmptyList . map toScore . V.toList $ recs
 
 
 
