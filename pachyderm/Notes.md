@@ -38,7 +38,18 @@ Problems
 --------
 So far it looks quite good, the dashboard is very useful but its enterprise only. 
 Also sometimes it just stops working and I have to do another port forward, not sure why.
-The dashboard doesn't work properly all the time
+The dashboard doesn't work properly all the time. Also, the error messages aren't great.
+e.g. On trying to delete something without starting a commit, it complains that the previous commit has already completed.
+     The parser for their pipeline spec. is a bit low level and not too great; also bad error messages.
+
+
+Things To Improve
+-----------------
+
+Parser should give line numbers in the error message:
+Joshuas-MacBook-Pro:regress_tickdata jrc12$ pachctl create-pipeline -f evanl_bins.json 
+malformed pipeline spec: json: cannot unmarshal string into Go value of type []json.RawMessage
+
 
 Use for us
 ----------
