@@ -1,7 +1,0 @@
-{
-  "pipeline": { "name": "test_cross" },
-  "input": {
-    
-  },
-  "transform": {}
-}

@@ -1,0 +1,26 @@
+{
+  "pipeline": { "name": "bins_evaled" },
+  "input": {
+    "cross": [
+      {
+        "atom": {
+          "repo":"expected",
+          "branch":"master",
+          "glob":"/"
+        }
+      },
+      {
+        "atom": {
+          "name":"binned",
+          "repo":"binned",
+          "branch":"master",
+          "glob":"/*/*/"
+        }
+      }
+    ]
+  },
+  "transform": {
+    "image": "jcoutin/eval_bins:0.0.3",
+    "cmd": ["/code/Main", "/pfs/binned", "/pfs/expected", "/pfs/out"]
+  }
+}

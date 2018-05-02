@@ -14,8 +14,17 @@ instance (Monoid m, Applicative f) => Applicative (Data f m) where
     Data m d u <*> Data m' d' u' = Data (m <> m') (d <*> d') (u u')
 
                 
+instance (Monoid m, Monad f) => Monad (Data f m) where
+    return = pure
+    Data m d u >>= f = Data (m <> metadata m1) m2 (uncheckedDat m1)
+        where
+          m1 = f u
+          m2 = d >>= dat . f
+
+
 type SimpleData m a = Data (Either Err) m a
 
+mkData :: Functor f => ((m, a) -> f (m, a)) -> m -> a -> Data f m a
 mkData checks meta a = Data meta (snd <$> checks (meta, a)) a
 
 noCheck = Right

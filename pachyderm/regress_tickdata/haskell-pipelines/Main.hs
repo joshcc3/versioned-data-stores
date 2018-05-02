@@ -14,6 +14,8 @@ import Application.Bin
 import Application.Config
 import Application.FilePath    
 import Application.List
+import Util
+
 
 import System.Environment
 import Control.Monad.Trans
@@ -129,10 +131,6 @@ csvRecord outputFp evaled = M.mapKeys toFname (M.mapWithKey toCsvRecord evaled)
                  scores
 
 -- What happens to stuff like open file handles and all the other bits of global state left lying around?
-
-abort :: (Show a) => a -> b
-abort = error . show
-
 
 writeRecord :: FileName -> [Rec] -> IO ()
 writeRecord fname recs = do

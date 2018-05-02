@@ -1,2 +1,0 @@
-FROM haskell
-ADD ./Application /code
