@@ -46,17 +46,7 @@ type Result = BinnedScores -> List CSVRecordResult
 binned :: List Score -> List (M.Map Key Score)
 binned scores = do
   scz <- scores
-  let 
-      unique ks =
-        fmap S.toList $ foldl (\a b -> do
-                        s <- a
-                        if S.member b s
-                        then Left ("Keys contain duplicate Elements", show ks)
-                        else Right (S.insert b s)
-                        )
-                (Right S.empty)
-                ks
-  ks <- mkSizeBoundedListWithChecks (==length scz) [unique] (map scoreKey scz)
+  ks <- mkSizeBoundedList (==length scz) (map scoreKey scz)
   return . map (M.fromList . (:[])) $ zip ks scz
   
   

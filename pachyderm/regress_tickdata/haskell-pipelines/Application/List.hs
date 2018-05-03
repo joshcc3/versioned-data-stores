@@ -8,6 +8,7 @@ import Control.Applicative
 import System.Directory
 import Control.Monad.Trans.Either
 import Control.Monad.Trans
+import qualified Data.Set as S
 
 
 type List a = SimpleData () [a]
@@ -39,3 +40,15 @@ mkListWithChecks additional list = mkData checks () list
     checks (_, a) = do
       l <- traverse ($ a) (pure:additional)
       pure ((), last l)
+
+mkUniqueListWithChecks cs = mkListWithChecks (unique:cs)
+    where 
+      unique ks =
+        fmap S.toList $ foldl (\a b -> do
+                        s <- a
+                        if S.member b s
+                        then Left ("Keys contain duplicate Elements", show ks)
+                        else Right (S.insert b s)
+                        )
+                (Right S.empty)
+                ks
