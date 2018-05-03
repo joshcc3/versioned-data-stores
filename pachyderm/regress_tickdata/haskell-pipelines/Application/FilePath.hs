@@ -2,6 +2,7 @@
 module Application.FilePath where
 
 import Application.Data
+import Util
 import Control.Applicative
 import System.Directory
 import Control.Monad.Trans.Either
@@ -26,27 +27,34 @@ instance Ord a => Ord (FilePth_ a) where
     compare (F d) (F d') = compare (uncheckedDat d) (uncheckedDat d')
 
 mkFPath :: String -> FilePth
-mkFPath = mkWithChecks [] 
+mkFPath = mkWithChecks []
 
 mkEmptyFPath :: String -> FilePth
-mkEmptyFPath = mkWithChecks [dirCondition (\b -> length b == 0)]
+mkEmptyFPath = mkWithChecks [pathExists, dirCondition (\b -> length b == 0)]
 
-mkNonEmptyFPath = mkWithChecks [dirCondition (\b -> length b > 0)]
+mkNonEmptyFPath = mkWithChecks [pathExists, dirCondition (\b -> length b > 0), pathExists]
 
 dirCondition cond a = do
   b <- liftIO (listDirectory a)
   if cond b then pure a else left ("Empty Directory is not empty", a)
 
 
+pathExists a = do
+  b <- liftIO (doesPathExist a)
+  if b then pure a else left ("Not a valid filepath", a)
+
+mkFPathFile :: String -> FilePth
+mkFPathFile = mkWithChecks [fileCond]
+    where
+      fileCond a = do
+        b <- liftIO (doesFileExist a)
+        if b then pure a else left("File does not exist", a)
 
 mkWithChecks :: [String -> MStack String] -> String ->  FilePth
 mkWithChecks additional fpath = F $ mkData checks () fpath
   where
-    checks (_, a) = isDir a
-                    *> traverse ($ a) additional
+    checks (_, a) = traverse ($ a) additional
                     *> pure ((), fpath)
-    isDir a = do
-      b <- liftIO (doesPathExist a)
-      if b then pure () else left ("Not a valid filepath", a)
 
-
+getFilePathFromDat :: FilePth -> IO String
+getFilePathFromDat = eitherT abort pure . dat . unwrap

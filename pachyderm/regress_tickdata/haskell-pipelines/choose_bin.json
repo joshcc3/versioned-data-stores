@@ -1,0 +1,15 @@
+{
+  "pipeline": { "name": "choose_bin" },
+  "input":
+    {
+      "atom": {
+        "repo":"bins_evaled",
+        "branch":"master",
+        "glob":"/"
+      }
+    },
+  "transform": {
+    "image": "jcoutin/choose_bin:0.0.1",
+    "cmd": ["/code/Main", "/pfs/bins_evaled", "/pfs/out"]
+  }
+}

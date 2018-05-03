@@ -1,0 +1,7 @@
+FROM haskell:7.10
+RUN cabal update && cabal install directory-tree && cabal install directory
+RUN cabal install either==4.4.1 && cabal install cassava
+ADD ./Util.hs /code/Util.hs
+ADD ./Application /code/Application
+ADD ./ChooseBin.hs /code/Main.hs
+RUN cd /code && ghc --make -O2 Main.hs

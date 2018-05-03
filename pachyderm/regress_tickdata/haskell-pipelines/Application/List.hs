@@ -25,12 +25,17 @@ mkSizeBoundedList f = mkListWithChecks [\x -> g x . f . length $ x]
       g x False = Left ("Size bounded list failed check", show x)
 
                                
+mkSizeBoundedListWithChecks :: Show a => (Int -> Bool) -> [[a] -> MStack [a]] ->  [a] -> List a
+mkSizeBoundedListWithChecks f cs = mkListWithChecks ((\x -> g x . f . length $ x):cs)
+    where
+      g x True = Right x
+      g x False = Left ("Size bounded list failed check", show x)
+
+                               
 type MStack = Either Err
 mkListWithChecks :: [[a] -> MStack [a]] -> [a] ->  List a
 mkListWithChecks additional list = mkData checks () list
   where
-    checks (_, a) = traverse ($ a) additional
-                    *> pure ((), list)
-
-
-
+    checks (_, a) = do
+      l <- traverse ($ a) (pure:additional)
+      pure ((), last l)

@@ -18,6 +18,7 @@ import Application.Score
 
 
 import qualified Data.Set as S
+import System.Directory
 import System.Environment
 import Control.Monad.Trans
 import Control.Monad
@@ -55,7 +56,7 @@ binned scores = do
                         )
                 (Right S.empty)
                 ks
-  ks <- mkListWithChecks [unique] (map scoreKey scz)
+  ks <- mkSizeBoundedListWithChecks (==length scz) [unique] (map scoreKey scz)
   return . map (M.fromList . (:[])) $ zip ks scz
   
   
@@ -64,35 +65,38 @@ main = do
   as <- getArgs >>= either abort pure . dat . mkArgs
   let config = mkCfg (as !! 0) (as !! 1)
       Cfg inputRoot outputRoot = either (\_ -> error "Config check failed") id (dat config)
-  scoreList <- parse inputRoot
-  ofile <- eitherT abort pure . dat . unwrap $ outputRoot
+  fpth <- getFilePathFromDat inputRoot
+  dirContents <- listDirectory fpth
+  let fs = map (mkFPathFile . ((fpth ++ "/") ++)) dirContents
+  scoreLists <- traverse parse fs
+  ofile <- getFilePathFromDat outputRoot
   let resCSV :: [FinalRec]
-      resCSV = map (either abort id . dat) . either abort id . dat . result . scored . binned $ scoreList
-  LBS.writeFile ofile (encode resCSV)
+      resCSV = map (either abort id . dat) . either abort id . dat . result . scored . binned . fmap concat . traverse id $ scoreLists
+  LBS.writeFile (ofile ++ "/output.csv") (encode resCSV)
   
 
 parse :: Parse
 parse fpth = do
-  let expectedFname x = mkData (expectedFname_ . reverse . takeWhile (/= '/') . reverse . snd) () x
-      expectedFname_ x@(_:_:'-':_:_:".csv") = right ((), x)
-      expectedFname_ x = left ("Binned fname did not match expected", x)
+  let expectedFname x = mkData expectedFname_ () x
+      expectedFname_ x =  case (reverse . takeWhile (/= '/') . reverse . snd $ x) of
+                          (_:_:'-':_:_:".csv") -> right x
+                          x -> left ("Binned fname did not match expected", x)
   fname <- eitherT abort pure . dat $ unwrap fpth >>= expectedFname
   fcontent <- BS.readFile fname
   let recs :: V.Vector Rec
-      recs = either abort id . decode HasHeader $ LBS.fromStrict fcontent
+      recs = either abort id . decode NoHeader $ LBS.fromStrict fcontent
       toScore :: Rec -> Score
       toScore = toScore_ . either abort id . dat . mkCSVRecord
       toScore_ (Rec u s e v) = mkScoreM (SMeta (mkUnderlier u) (Just (mkBin (s, e)))) v
-  return . mkNonEmptyList . map toScore . V.toList $ recs
+  return . mkSizeBoundedList (==3) . map toScore . V.toList $ recs
 
 
 scoreKey :: ScoreKey
 scoreKey = Score.underlier . metadata
 
 scored :: Scored
-scored = foldl g M.empty
+scored = foldl (M.unionWith unioner) M.empty . simpleDat
     where
-      g acc l = foldl (M.unionWith unioner) acc l
       unioner l m = do
         s1 <- l
         s2 <- m
@@ -131,4 +135,4 @@ mkArgs :: [String] -> Args
 mkArgs = mkData check ()
     where
       check (m, x@[_, _]) = Right (m, x)
-      check (_, as) = Left ("You must supply 3 arguments: the binned tickdata root, the expected outcome data root, evaluation output root", show as)
+      check (_, as) = Left ("You must supply 2 arguments: the input root,  output root", show as)

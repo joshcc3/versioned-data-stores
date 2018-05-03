@@ -4,12 +4,22 @@
 module Application.Data where
 import Control.Applicative
 import Data.Monoid
-
+import Util
 
 type Err = (String, String)
 type Check f a = a -> f a
 
-data Data f m a = Data { metadata :: m, dat :: f a, uncheckedDat :: a } deriving (Functor, Eq, Ord, Show, Read, Foldable, Traversable)
+data Data f m a = Data { metadata :: m, _dat :: f a, uncheckedDat :: a } deriving (Functor, Eq, Ord, Show, Read)
+
+simpleDat :: (Show a, Eq a) => SimpleData m a -> a
+simpleDat = either abort id . dat
+
+dat :: (Functor f, Eq a) => Data f m a -> f a
+dat d = fmap (cond (uncheckedDat d)) (_dat d)
+    where
+      cond d' x
+          | x == d' = x
+          | otherwise = error ("Unchecked data did not equal the checked data ")
 
 instance (Monoid m, Applicative f) => Applicative (Data f m) where
     pure x = Data mempty (pure x) x
@@ -21,7 +31,7 @@ instance (Monoid m, Monad f) => Monad (Data f m) where
     Data m d u >>= f = Data (m <> metadata m1) m2 (uncheckedDat m1)
         where
           m1 = f u
-          m2 = d >>= dat . f
+          m2 = d >>= _dat . f
 
 
 type SimpleData m a = Data (Either Err) m a
