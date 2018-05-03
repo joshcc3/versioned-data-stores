@@ -88,7 +88,7 @@ parse fpth = do
       toScore :: Rec -> Score
       toScore = toScore_ . either abort id . dat . mkCSVRecord
       toScore_ (Rec u s e v) = mkScoreM (SMeta (mkUnderlier u) (Just (mkBin (s, e)))) v
-  return . mkSizeBoundedList (==3) . map toScore . V.toList $ recs
+  return . mkSizeBoundedList (>= 1) . map toScore . V.toList $ recs
 
 
 scoreKey :: ScoreKey
