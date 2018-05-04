@@ -1,0 +1,16 @@
+{
+  "pipeline": {
+    "name": "pl-source"
+  },
+  "input": {
+    "atom": {
+      "name": "input",
+      "repo": "source-ext",
+      "glob": "/"
+    }
+  },
+  "transform": {
+    "image": "jcoutin/pl:0.0.2",
+    "cmd": ["python", "/code/source.py", "/pfs/input/source.csv", "/pfs/out/output.csv"]
+  }
+}

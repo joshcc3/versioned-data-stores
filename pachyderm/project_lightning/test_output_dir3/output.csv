@@ -1,0 +1,5 @@
+code1,code2,source1,status,type,match1,match2
+AA1,BB1,S1,alive,equity,M1,Q1
+AA2,BB1,S2,alive,equity,M2,
+AA3,BB3,S4,alive,equity,,
+AA1,BB2,S3,alive,equity,,

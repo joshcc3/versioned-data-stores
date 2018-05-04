@@ -1,0 +1,25 @@
+{
+  "pipeline": {
+    "name": "pl-matcher1"
+  },
+  "input": {
+    "cross": [
+      {
+        "atom": {
+          "repo": "pl-source",
+          "glob": "/"
+        }
+      },
+      {
+        "atom": {
+          "repo": "matcher1-ext",
+          "glob": "/"
+        }
+      }
+    ]
+  },
+  "transform": {
+    "image": "jcoutin/pl:0.0.2",
+    "cmd": ["python", "/code/matcher1.py", "/pfs/pl-source/output.csv", "/pfs/matcher1-ext/input.csv", "/pfs/out/output.csv"]
+  }
+}
